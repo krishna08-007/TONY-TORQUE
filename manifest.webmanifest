@@ -1,0 +1,19 @@
+{
+  "name": "Tony — Personal Assistant",
+  "short_name": "Tony",
+  "description": "A private, voice-enabled personal assistant for your device.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b101c",
+  "theme_color": "#0b101c",
+  "icons": [
+    {
+      "src": "./tony-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

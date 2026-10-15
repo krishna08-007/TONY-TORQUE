@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0b101c">
+    <meta name="description" content="Tony is a private, voice-enabled personal assistant for your browser.">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="tony-icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="tony-icon.svg">
+    <title>Tony — Personal Assistant</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="Tony home">
+          <span class="brand-mark" aria-hidden="true">T</span>
+          <span>
+            <strong>TONY</strong>
+            <small>YOUR PERSONAL ASSISTANT</small>
+          </span>
+        </a>
+        <div class="topbar-meta">
+          <span class="privacy-label"><span class="privacy-dot"></span>Private by design</span>
+          <time id="live-clock" aria-label="Current date and time"></time>
+        </div>
+        <div class="topbar-actions">
+          <button class="utility-button" id="notifications-button" type="button">Enable alerts</button>
+          <button class="utility-button install-button" id="install-button" type="button">Install app</button>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero" aria-labelledby="greeting">
+          <div class="hero-copy">
+            <p class="eyebrow">YOUR DAY, IN CONTROL</p>
+            <h1 id="greeting">Good day. <span>I'm Tony.</span></h1>
+            <p class="hero-subtitle">Your personal assistant, ready when you are.</p>
+          </div>
+          <div class="hero-orb" aria-hidden="true">
+            <div class="orb-ring orb-ring-one"></div>
+            <div class="orb-ring orb-ring-two"></div>
+            <div class="orb-core"><span>T</span></div>
+          </div>
+        </section>
+
+        <section class="assistant-panel panel" aria-labelledby="assistant-title">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">ASSISTANT</p>
+              <h2 id="assistant-title">What can I help with?</h2>
+            </div>
+            <span class="available"><span></span> Ready</span>
+          </div>
+          <div class="conversation" id="conversation" role="log" aria-live="polite" aria-relevant="additions">
+            <div class="message assistant-message">
+              <span class="message-avatar" aria-hidden="true">T</span>
+              <p>Try “call Alex”, “WhatsApp Alex I’m on my way”, “remind me to stretch in 20 minutes”, “take a note buy coffee”, or “add task pick up groceries”. Install Tony on your phone for a home-screen app.</p>
+            </div>
+          </div>
+          <form class="command-form" id="command-form">
+            <label class="sr-only" for="command-input">Ask Tony or enter a command</label>
+            <input id="command-input" name="command" autocomplete="off" placeholder="Ask Tony to do something…" maxlength="500">
+            <button class="icon-button mic-button" id="voice-button" type="button" aria-label="Start voice input" title="Start voice input">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"></rect><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 18v3m-4 0h8"></path></svg>
+            </button>
+            <button class="send-button" type="submit">Send <span aria-hidden="true">↗</span></button>
+          </form>
+          <div class="suggestions" aria-label="Example commands">
+            <button type="button" data-command="What time is it?">What's the time?</button>
+            <button type="button" data-command="What is today's date?">Today's date</button>
+            <button type="button" data-command="Take a note ">Take a note</button>
+            <button type="button" data-command="Remind me to ">Set a reminder</button>
+            <button type="button" data-command="Add task ">Add a task</button>
+            <button type="button" data-command="List tasks">My tasks</button>
+          </div>
+          <p class="voice-status" id="voice-status" aria-live="polite"></p>
+        </section>
+
+        <div class="dashboard-grid">
+          <section class="panel tasks-panel" aria-labelledby="tasks-title">
+            <div class="panel-heading compact-heading">
+              <div>
+                <p class="eyebrow">MAKE IT HAPPEN</p>
+                <h2 id="tasks-title">My tasks <span class="count-badge" id="task-count">0</span></h2>
+              </div>
+            </div>
+            <form class="task-form" id="task-form">
+              <label class="sr-only" for="task-input">Add a task</label>
+              <input id="task-input" name="task" maxlength="200" placeholder="What needs doing?">
+              <button class="small-primary" type="submit">Add</button>
+            </form>
+            <ul class="task-list" id="task-list"></ul>
+            <p class="empty-state" id="tasks-empty">Your to-dos will show up here.</p>
+          </section>
+
+          <section class="panel contacts-panel" aria-labelledby="contacts-title">
+            <div class="panel-heading compact-heading">
+              <div>
+                <p class="eyebrow">STAY CONNECTED</p>
+                <h2 id="contacts-title">Your people</h2>
+              </div>
+              <button class="text-button" id="add-contact-button" type="button">＋ Add contact</button>
+            </div>
+            <form class="contact-form hidden" id="contact-form">
+              <label>
+                <span>Name</span>
+                <input id="contact-name" name="name" required maxlength="60" placeholder="e.g. Alex">
+              </label>
+              <label>
+                <span>Phone number</span>
+                <input id="contact-phone" name="phone" type="tel" required maxlength="24" placeholder="+1 555 123 4567">
+              </label>
+              <div class="form-actions">
+                <button class="text-button" id="cancel-contact-button" type="button">Cancel</button>
+                <button class="small-primary" type="submit">Save contact</button>
+              </div>
+            </form>
+            <div class="contact-list" id="contact-list"></div>
+            <p class="empty-state" id="contacts-empty">Add someone to call or message them with a quick command.</p>
+          </section>
+
+          <section class="panel reminders-panel" aria-labelledby="reminders-title">
+            <div class="panel-heading compact-heading">
+              <div>
+                <p class="eyebrow">DON'T FORGET</p>
+                <h2 id="reminders-title">Reminders <span class="count-badge" id="reminder-count">0</span></h2>
+              </div>
+            </div>
+            <ul class="reminder-list" id="reminder-list"></ul>
+            <p class="empty-state" id="reminders-empty">Nothing scheduled. Ask Tony to remind you of something.</p>
+          </section>
+
+          <section class="panel notes-panel" aria-labelledby="notes-title">
+            <div class="panel-heading compact-heading">
+              <div>
+                <p class="eyebrow">CAPTURE A THOUGHT</p>
+                <h2 id="notes-title">Quick notes <span class="count-badge" id="note-count">0</span></h2>
+              </div>
+            </div>
+            <form class="note-form" id="note-form">
+              <label class="sr-only" for="note-input">Write a quick note</label>
+              <input id="note-input" name="note" maxlength="500" placeholder="Write a quick note…">
+              <button class="small-primary" type="submit" aria-label="Save note">Add</button>
+            </form>
+            <ul class="note-list" id="note-list"></ul>
+            <p class="empty-state" id="notes-empty">Your notes stay right here on this device.</p>
+          </section>
+        </div>
+        <p class="disclaimer">Contacts, tasks, notes, and reminders stay in this browser. Voice input uses your browser's speech service and may be processed online. Calls and messages open for you to review and confirm.</p>
+      </main>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+  </body>
+</html>
