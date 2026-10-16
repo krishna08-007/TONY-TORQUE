@@ -59,13 +59,13 @@
           <div class="conversation" id="conversation" role="log" aria-live="polite" aria-relevant="additions">
             <div class="message assistant-message">
               <span class="message-avatar" aria-hidden="true">T</span>
-              <p>Try “call Alex”, “WhatsApp Alex I’m on my way”, “remind me to stretch in 20 minutes”, “take a note buy coffee”, or “add task pick up groceries”. Install Tony on your phone for a home-screen app.</p>
+              <p>Say “Hey Tony” or “OK Tony” followed by a request, or try “call Alex”, “search Google for today’s weather”, “remind me to stretch in 20 minutes”, “take a note buy coffee”, or “add task pick up groceries”. Tap the microphone once to enable wake-word listening.</p>
             </div>
           </div>
           <form class="command-form" id="command-form">
             <label class="sr-only" for="command-input">Ask Tony or enter a command</label>
             <input id="command-input" name="command" autocomplete="off" placeholder="Ask Tony to do something…" maxlength="500">
-            <button class="icon-button mic-button" id="voice-button" type="button" aria-label="Start voice input" title="Start voice input">
+            <button class="icon-button mic-button" id="voice-button" type="button" aria-label="Start voice and wake-word listening" aria-pressed="false" title="Start voice and wake-word listening">
               <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"></rect><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 18v3m-4 0h8"></path></svg>
             </button>
             <button class="send-button" type="submit">Send <span aria-hidden="true">↗</span></button>
@@ -151,7 +151,7 @@
             <p class="empty-state" id="notes-empty">Your notes stay right here on this device.</p>
           </section>
         </div>
-        <p class="disclaimer">Contacts, tasks, notes, and reminders stay in this browser. Voice input uses your browser's speech service and may be processed online. Calls and messages open for you to review and confirm.</p>
+        <p class="disclaimer">Contacts, tasks, notes, and reminders stay in this browser. Voice input uses your browser's speech service and may be processed online. Start listening with the microphone; your device may ask you to confirm calls. Google searches open in a new tab.</p>
       </main>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
     </div>

@@ -47,6 +47,11 @@ let tasks = readStoredList(STORAGE_KEYS.tasks);
 let toastTimeout;
 let recognition;
 let installPrompt;
+let voiceEnabled = false;
+let wakeWordDetected = false;
+let voiceCommand = "";
+let voiceSubmitTimeout;
+let voiceRestartTimeout;
 
 function readStoredList(key) {
   try {
@@ -125,6 +130,15 @@ function addActionCard(title, description, buttonLabel, action) {
   card.append(heading, detail, button);
   elements.conversation.append(card);
   elements.conversation.scrollTop = elements.conversation.scrollHeight;
+}
+
+function searchGoogle(query) {
+  addMessage(`I don't have a built-in live answer for that. Searching Google for “${query}”.`, "assistant");
+  const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+  window.open(searchUrl, "_blank", "noopener,noreferrer");
+  addActionCard("Google search", query, "Search Google", () => {
+    window.open(searchUrl, "_blank", "noopener,noreferrer");
+  });
 }
 
 function saveNote(text) {
@@ -348,12 +362,21 @@ function handleCommand(rawCommand) {
   elements.commandInput.value = "";
   const normalized = command.toLocaleLowerCase();
 
+  const googleSearchMatch = command.match(/^(?:search\s+)?google(?:\s+for)?(?:\s+(.+))?$/i);
+  if (googleSearchMatch) {
+    const searchQuery = googleSearchMatch[1]?.trim();
+    if (!searchQuery) {
+      addMessage("What would you like me to search for on Google?", "assistant");
+      return;
+    }
+    searchGoogle(searchQuery);
+    return;
+  }
+
   const callContact = findNamedContact(command, "call");
   if (callContact) {
-    addMessage(`Ready to call ${callContact.name}.`, "assistant");
-    addActionCard("Place a call", callContact.phone, `Call ${callContact.name}`, () => {
-      window.location.href = `tel:${callContact.phone.replace(/[^\d+]/g, "")}`;
-    });
+    addMessage(`Calling ${callContact.name}. Your phone may ask you to confirm the call.`, "assistant");
+    window.location.href = `tel:${callContact.phone.replace(/[^\d+]/g, "")}`;
     return;
   }
   if (normalized === "call" || normalized.startsWith("call ")) {
@@ -448,10 +471,10 @@ function handleCommand(rawCommand) {
     return;
   }
   if (/^(?:help|what can you do)\??$/i.test(command)) {
-    addMessage("I can start calls, prepare WhatsApp messages, save notes, manage tasks, set reminders, and tell you the time or date. Add contacts first so I know who to reach.", "assistant");
+    addMessage("I can call saved contacts, prepare WhatsApp messages, search Google, save notes, manage tasks, set reminders, and tell you the time or date. Tap the microphone to enable voice and wake-word listening, then say “Hey Tony” or “OK Tony.”", "assistant");
     return;
   }
-  addMessage("I'm still learning. Try “help” to see what I can do, or use the notes, reminders, and contacts here.", "assistant");
+  searchGoogle(command);
 }
 
 function updateNotificationsButton() {
@@ -548,37 +571,101 @@ function setupVoiceInput() {
   }
   recognition = new SpeechRecognition();
   recognition.lang = navigator.language || "en-US";
+  recognition.continuous = true;
   recognition.interimResults = false;
   recognition.maxAlternatives = 1;
   recognition.addEventListener("start", () => {
     elements.voiceButton.classList.add("listening");
-    elements.voiceStatus.textContent = "Listening…";
+    elements.voiceButton.setAttribute("aria-pressed", "true");
+    elements.voiceStatus.textContent = "Listening for “Hey Tony” or “OK Tony”. You can also speak a command.";
   });
   recognition.addEventListener("result", (event) => {
-    const transcript = event.results[0][0].transcript;
-    elements.commandInput.value = transcript;
-    elements.voiceStatus.textContent = "Review the command, then press Send.";
-    elements.commandInput.focus();
+    const transcript = Array.from(event.results)
+      .slice(event.resultIndex)
+      .filter((result) => result.isFinal)
+      .map((result) => result[0].transcript.trim())
+      .filter(Boolean)
+      .join(" ");
+    if (!transcript) return;
+
+    const wakeWord = /\b(?:hey\s+tony|okay\s+tony|ok\s+tony)\b/i;
+    const wakeMatch = wakeWord.exec(transcript);
+    if (wakeMatch) {
+      wakeWordDetected = true;
+      voiceCommand += ` ${transcript.slice(wakeMatch.index + wakeMatch[0].length).replace(/^[\s,.:;!?-]+/, "")}`;
+    } else if (wakeWordDetected) {
+      voiceCommand += ` ${transcript}`;
+    } else {
+      voiceCommand = transcript;
+    }
+
+    voiceCommand = voiceCommand.trim();
+    elements.commandInput.value = voiceCommand;
+    if (wakeWordDetected && !voiceCommand) {
+      elements.voiceStatus.textContent = "Tony is awake. Say your command.";
+      return;
+    }
+    elements.voiceStatus.textContent = "Sending when you finish speaking…";
+    window.clearTimeout(voiceSubmitTimeout);
+    voiceSubmitTimeout = window.setTimeout(() => {
+      if (!elements.commandInput.value.trim()) return;
+      elements.commandForm.requestSubmit();
+      voiceCommand = "";
+      wakeWordDetected = false;
+      elements.voiceStatus.textContent = "Listening for “Hey Tony” or “OK Tony”.";
+    }, 900);
   });
   recognition.addEventListener("error", (event) => {
     const message = event.error === "not-allowed"
       ? "Microphone access was blocked. Allow it in your browser settings to use voice input."
       : `Voice input failed (${event.error}). You can still type commands.`;
     elements.voiceStatus.textContent = message;
+    if (event.error === "not-allowed" || event.error === "service-not-allowed" || event.error === "audio-capture") {
+      voiceEnabled = false;
+    }
   });
-  recognition.addEventListener("end", () => elements.voiceButton.classList.remove("listening"));
-  elements.voiceButton.addEventListener("click", () => {
-    elements.voiceStatus.textContent = "";
+  recognition.addEventListener("end", () => {
+    elements.voiceButton.classList.remove("listening");
+    elements.voiceButton.setAttribute("aria-pressed", "false");
+    if (voiceEnabled && voiceCommand.trim()) {
+      window.clearTimeout(voiceSubmitTimeout);
+      voiceSubmitTimeout = window.setTimeout(() => {
+        elements.commandForm.requestSubmit();
+        voiceCommand = "";
+        wakeWordDetected = false;
+      }, 250);
+    }
+    if (voiceEnabled) {
+      window.clearTimeout(voiceRestartTimeout);
+      voiceRestartTimeout = window.setTimeout(startVoiceRecognition, 500);
+    }
+  });
+  function startVoiceRecognition() {
+    if (!voiceEnabled) return;
     try {
       recognition.start();
     } catch (error) {
-      if (error instanceof DOMException && error.name === "InvalidStateError") {
-        elements.voiceStatus.textContent = "Tony is already listening.";
-        return;
-      }
+      if (error instanceof DOMException && error.name === "InvalidStateError") return;
       console.error("Could not start voice input.", error);
+      voiceEnabled = false;
       elements.voiceStatus.textContent = "Tony couldn't start voice input. You can still type commands.";
     }
+  }
+  elements.voiceButton.addEventListener("click", () => {
+    if (voiceEnabled) {
+      voiceEnabled = false;
+      window.clearTimeout(voiceRestartTimeout);
+      recognition.stop();
+      elements.voiceButton.classList.remove("listening");
+      elements.voiceButton.setAttribute("aria-pressed", "false");
+      elements.voiceStatus.textContent = "Voice listening is off.";
+      return;
+    }
+    voiceEnabled = true;
+    wakeWordDetected = false;
+    voiceCommand = "";
+    elements.voiceStatus.textContent = "";
+    startVoiceRecognition();
   });
 }
 

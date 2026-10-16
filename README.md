@@ -12,14 +12,15 @@ For basic use, open `index.html` in a modern browser. To install Tony on a phone
 
 ## What it can do
 
-- **Calls:** Add a contact with their phone number and country code, then say or type `call Alex`. Tony asks you to confirm by pressing a call button; your device handles the call.
+- **Calls:** Add a contact with their phone number and country code, then say or type `call Alex`. Tony immediately opens your device's calling app; the device may still ask you to confirm.
 - **WhatsApp:** Use `WhatsApp Alex I'm on my way` or `message Alex I'll call later`. Tony prepares a message and opens WhatsApp for you to review and send.
 - **Reminders:** Try `remind me to stretch in 20 minutes` or `remind me to call Alex in 2 hours`. Keep the page open for the reminder alert; browser notifications are shown if you have already allowed them.
 - **Notes:** Use `take a note buy coffee`, or add notes in Quick notes.
 - **Tasks:** Use `add task pick up groceries`, `list tasks`, or `complete task pick up groceries`. Tasks can also be checked off or deleted in My tasks.
 - **Time and date:** Ask `what time is it?` or `what is today's date?`.
-- **Voice input:** Press the microphone, speak, review the recognized command, then press Send.
+- **Voice input:** Press the microphone once to enable listening, then say `Hey Tony` or `OK Tony` followed by a command. Tony submits the recognized command after you pause. You can also speak a command without a wake phrase. Press the microphone again to turn listening off. Browsers require this initial user gesture and may stop speech recognition periodically; Tony attempts to resume it while listening is enabled.
+- **Google search:** If Tony doesn't understand a question, it attempts to open Google results in a new tab. If your browser blocks the new tab, choose **Search Google** in the conversation. Tony does not fetch or summarize search results inside the app; that would require a search API and a server-side credential, which this static app does not have.
 - **Notifications:** Tap **Enable alerts** and allow browser notifications to receive reminder alerts while Tony is open.
 - **Offline app shell:** After first loading Tony from a secure site, its page, styles, scripts, and icon are cached for later offline visits.
 
-Contacts, reminders, notes, and tasks are saved in this browser's local storage and are not sent to a Tony server. Clearing browser data removes them; data is not automatically shared between devices. Keep Tony open for reminder timers to run—mobile browsers may pause timers when the app is closed or suspended. Voice input is provided by your browser and may be processed online by its speech-recognition service. A phone number must include its international country code for WhatsApp links to work. The browser cannot silently place calls or send WhatsApp messages; you review and confirm those actions in your device's calling app or WhatsApp.
+Contacts, reminders, notes, and tasks are saved in this browser's local storage and are not sent to a Tony server. Clearing browser data removes them; data is not automatically shared between devices. Keep Tony open for reminder timers to run—mobile browsers may pause timers when the app is closed or suspended. Voice input is provided by your browser and may be processed online by its speech-recognition service. A phone number must include its international country code for WhatsApp links to work. Tony can request a call through a `tel:` link, but your browser or phone controls whether to open the calling app and may require confirmation. WhatsApp messages are opened for review and confirmation.
